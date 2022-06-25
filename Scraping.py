@@ -6,12 +6,9 @@ soup = BeautifulSoup(r.content, 'html.parser')
 
 arrayOfInfo = []
 
-title = soup.find("meta", property = "og:title")["content"]
-arrayOfInfo.append(title)
+metaContent = [soup.find("meta", property = "og:title")]
+metaContent += soup.find_all("meta", property = "og:video:tag")
 
-metaContent = soup.find_all("meta", property = "og:video:tag")
-for i in metaContent:
-    arrayOfInfo.append(i["content"])
-
-for i in range(0,len(arrayOfInfo)):
-    print(arrayOfInfo[i])
+for i in range(0, len(metaContent)):
+    metaContent[i] = metaContent[i]["content"]
+    print(metaContent[i])
