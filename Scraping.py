@@ -3,56 +3,63 @@ from selenium.webdriver.common.by import By
 import time
 import requests
 from bs4 import BeautifulSoup
+import random
 
-url = "https://www.youtube.com/watch?v=Q-aiMVY4FkM"
+queue = ["https://www.youtube.com/watch?v=Q-aiMVY4FkM"]
+checked = []
 
 for j in range(0,5):
     driver = webdriver.Chrome(executable_path=r"C:\Users\lucas\%Work\Programs\chromedriver.exe")
-    driver.get(url)
+    driver.get(queue[0])
 
-    watchLinks = []
-    while len(watchLinks) < 3:
-        time.sleep(1)
+    resultAccount = driver.find_elements(By.TAG_NAME, "base")
+    if len(resultAccount) > 0:
+        print("Google can go fuck itself")
+        driver.close()
 
-        results = driver.find_elements(
-            By.TAG_NAME,
-            "a"
-        )
+    else:
+        watchLinks = []
+        while len(watchLinks) < 1:
 
-        for i in range(0, len(results)):
-            try:
-                if(results[i].get_attribute("href") != None):
-                    if(len(results[i].get_attribute("href").split("watch")) > 1):
-                        watchLinks.append(results[i].get_attribute("href"))
-            except:
-                None
+            results = driver.find_elements(
+                By.TAG_NAME,
+                "a"
+            )
 
-    r = requests.get(url)
+            for i in range(0, len(results)):
+                try:
+                    if(results[i].get_attribute("href") != None):
+                        if(len(results[i].get_attribute("href").split("watch")) > 1):
+                            watchLinks.append(results[i].get_attribute("href"))
+                except:
+                    None
 
-    soup = BeautifulSoup(r.content, 'html.parser')
-    arrayOfInfo = []
+        r = requests.get(queue[0])
 
-    metaContent = [soup.find("meta", property="og:title")]
-    metaContent += soup.find_all("meta", property="og:video:tag")
+        soup = BeautifulSoup(r.content, 'html.parser')
+        arrayOfInfo = []
 
-    for i in range(0, len(metaContent)):
-        metaContent[i] = metaContent[i]["content"]
+        metaContent = [soup.find("meta", property="og:title")]
+        metaContent += soup.find_all("meta", property="og:video:tag")
 
-
-    print(j , ":", metaContent[0])
-
-    f = open("VideoInfo.txt","a")
-    for info in metaContent:
-        f.write(info + "\n")
-    f.write("--\n")
-    f.close()
-
-
-    url = watchLinks[2]
-    driver.close()
+        for i in range(0, len(metaContent)):
+            metaContent[i] = metaContent[i]["content"]
 
 
         print(j , ":", metaContent[0])
 
-        url = watchLinks[2]
+        f = open("VideoInfo.txt","a")
+        for info in metaContent:
+            f.write(info + "\n")
+        f.write("--\n")
+        f.close()
 
+        driver.close()
+
+        checked.append(queue[0])
+        queue.pop(0)
+        #Whitelisting
+        if(True):
+            for i in range(len(watchLinks)-2,-1,-1):
+                if(watchLinks[i] != queue and watchLinks[i] != checked):
+                    queue.append(watchLinks[i])
